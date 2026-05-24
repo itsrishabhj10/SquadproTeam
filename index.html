@@ -1,0 +1,1426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+<title>SquadPro – Team Sports Manager</title>
+<meta name="description" content="SquadPro: Manage sports squads, track player stats, shuffle teams and log match results."/>
+<meta name="google-adsense-account" content="ca-pub-7886352885286237">
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7886352885286237" crossorigin="anonymous"></script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7886352885286237"
+crossorigin="anonymous"></script>
+<style>
+/* ══════════════════════════════════════════════════
+   RESET & VARIABLES
+══════════════════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-tap-highlight-color:transparent}
+body{
+  background:#080a0e;color:#f0f2f8;
+  font-family:'Poppins',sans-serif;
+  min-height:100vh;overflow-x:hidden;
+  padding-bottom:140px;
+} 
+:root{
+  --p:#00C853;--a:#69F0AE;--glow:rgba(0,200,83,0.28);
+  --bg:#080a0e;--s1:rgba(255,255,255,0.04);--s2:rgba(255,255,255,0.08);
+  --border:rgba(255,255,255,0.08);--muted:rgba(255,255,255,0.38);
+  --danger:#ef5350;--warn:#ffd740;
+  --nav-h:68px;--top-h:54px;
+}
+
+/* ══ AMBIENT GLOW ══ */
+body::before{
+  content:'';position:fixed;top:-180px;left:50%;transform:translateX(-50%);
+  width:650px;height:400px;background:var(--glow);
+  filter:blur(100px);pointer-events:none;z-index:0;border-radius:50%;
+  transition:background 0.6s ease;
+}
+
+/* ══ AD UNITS ══ */
+.ad-banner-top{
+  width:100%;min-height:60px;background:rgba(0,0,0,0.4);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;position:relative;z-index:10;
+}
+.ad-banner-top::before{
+  content:'SPONSORED';position:absolute;top:3px;left:50%;transform:translateX(-50%);
+  font-size:8px;color:rgba(255,255,255,0.12);letter-spacing:2px;
+  font-family:'Barlow Condensed',sans-serif;
+}
+.ad-box{
+  background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.06);
+  border-radius:14px;padding:4px 4px 2px;margin:16px 0;
+  overflow:hidden;min-height:90px;
+  display:flex;align-items:center;justify-content:center;
+  position:relative;
+}
+.ad-box::before{
+  content:'Ad';position:absolute;top:5px;right:8px;
+  font-size:9px;color:rgba(255,255,255,0.15);
+  letter-spacing:1px;font-family:'Barlow Condensed',sans-serif;
+}
+.ad-sticky-bar{
+  position:fixed;bottom:var(--nav-h);left:0;right:0;z-index:190;
+  background:rgba(8,10,14,0.97);border-top:1px solid var(--border);
+  min-height:52px;display:flex;align-items:center;justify-content:center;
+  overflow:hidden;
+}
+
+/* ══ TOP BAR ══ */
+#topbar{
+  position:sticky;top:0;z-index:200;height:var(--top-h);
+  background:rgba(8,10,14,0.96);backdrop-filter:blur(24px);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 14px;gap:10px;
+}
+#logo{
+  font-family:'Barlow Condensed',sans-serif;font-weight:900;
+  font-size:23px;color:#fff;letter-spacing:2px;flex:1;
+}
+#logo span{color:var(--p)}
+#sport-tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+#sport-tabs::-webkit-scrollbar{display:none}
+.sp-btn{
+  background:transparent;border:1px solid transparent;border-radius:10px;
+  padding:5px 8px;font-size:18px;cursor:pointer;transition:all 0.2s;flex-shrink:0;
+}
+.sp-btn.on{background:rgba(0,200,83,0.12);border-color:var(--p)}
+#exit-btn{
+  background:var(--s2);border:none;border-radius:10px;
+  color:var(--muted);padding:6px 12px;font-size:11px;
+  cursor:pointer;font-family:'Barlow Condensed',sans-serif;
+  font-weight:700;letter-spacing:1px;white-space:nowrap;
+}
+
+/* ══ SPORT BANNER ══ */
+#sport-banner{
+  height:42px;background:linear-gradient(to right,rgba(0,200,83,0.09),transparent);
+  border-bottom:1px solid rgba(0,200,83,0.12);
+  display:flex;align-items:center;padding:0 16px;gap:10px;transition:all 0.4s;
+}
+#b-name{
+  font-family:'Barlow Condensed',sans-serif;font-weight:700;
+  font-size:14px;color:var(--p);letter-spacing:2px;text-transform:uppercase;
+}
+#b-fmt{font-size:11px;color:var(--muted);margin-left:6px}
+
+/* ══ SCREENS ══ */
+.screen{display:none;padding:18px 16px;position:relative;z-index:1}
+.screen.on{display:block;animation:fadeUp 0.3s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@media(min-width:640px){
+  .screen{max-width:700px;margin:0 auto;}
+  #topbar,#sport-banner,.ad-banner-top,.ad-sticky-bar{max-width:100%}
+}
+
+/* ══ NAV ══ */
+#nav{
+  position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);
+  background:rgba(8,10,14,0.98);backdrop-filter:blur(24px);
+  border-top:1px solid var(--border);display:flex;z-index:200;
+}
+.nb{
+  flex:1;background:none;border:none;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:3px;cursor:pointer;padding:0;
+}
+.nb .ni{font-size:20px;opacity:0.3;transition:all 0.2s;filter:grayscale(1)}
+.nb .nl{
+  font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:9px;
+  letter-spacing:1px;color:var(--muted);text-transform:uppercase;transition:color 0.2s;
+}
+.nb .nd{width:18px;height:2px;background:var(--p);border-radius:1px;opacity:0;transition:opacity 0.2s}
+.nb.on .ni{opacity:1;filter:none}
+.nb.on .nl{color:var(--p)}
+.nb.on .nd{opacity:1}
+
+/* ══ CARDS & LAYOUT ══ */
+.card{background:var(--s1);border:1px solid var(--border);border-radius:18px;padding:18px 20px}
+.card:hover{border-color:rgba(255,255,255,0.14)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g4{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media(min-width:420px){.g4{grid-template-columns:repeat(4,1fr)}}
+.row{display:flex;align-items:center;gap:12px}
+.row-b{display:flex;align-items:center;justify-content:space-between}
+.stat-chip{
+  background:var(--s1);border:1px solid var(--border);border-radius:16px;
+  padding:14px 12px;text-align:center;
+}
+.stat-chip .ico{font-size:22px;margin-bottom:6px}
+.stat-chip .val{
+  font-family:'Barlow Condensed',sans-serif;font-weight:800;
+  font-size:28px;color:var(--p);line-height:1;
+}
+.stat-chip .lbl{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-top:3px}
+.sec-title{
+  font-family:'Barlow Condensed',sans-serif;font-weight:800;
+  font-size:22px;color:#fff;letter-spacing:1px;margin-bottom:16px;
+}
+.sec-sub{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px}
+
+/* ══ BUTTONS ══ */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  border:none;border-radius:12px;padding:12px 22px;
+  font-family:'Barlow Condensed',sans-serif;font-weight:700;
+  font-size:15px;letter-spacing:1px;text-transform:uppercase;
+  cursor:pointer;transition:all 0.2s;
+}
+.btn-p{background:var(--p);color:#000}
+.btn-p:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.btn-s{background:var(--s2);color:#fff}
+.btn-s:hover{background:rgba(255,255,255,0.13)}
+.btn-d{background:rgba(239,83,80,0.14);border:1px solid rgba(239,83,80,0.3);color:var(--danger)}
+.btn-sm{padding:7px 14px;font-size:13px;border-radius:10px}
+.btn-f{width:100%}
+.btn:disabled{opacity:0.4;cursor:not-allowed;transform:none!important}
+
+/* ══ FORM ══ */
+.field{margin-bottom:15px}
+.field label{
+  display:block;font-size:10px;color:var(--muted);
+  letter-spacing:1px;text-transform:uppercase;
+  font-family:'Barlow Condensed',sans-serif;margin-bottom:6px;
+}
+.field input,.field select,.field textarea{
+  width:100%;background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.12);border-radius:12px;
+  padding:11px 15px;color:#fff;font-size:15px;outline:none;
+  font-family:'Poppins',sans-serif;transition:border-color 0.2s;
+}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--p)}
+.field select option{background:#0f1117}
+.field textarea{resize:none}
+.err{color:var(--danger);font-size:13px;margin-bottom:10px}
+
+/* ══ MODAL ══ */
+.overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0.88);
+  z-index:500;display:none;align-items:center;
+  justify-content:center;padding:18px;
+}
+.overlay.on{display:flex}
+.mbox{
+  background:#0e1118;border:1px solid rgba(255,255,255,0.1);
+  border-radius:22px;padding:26px;width:100%;max-width:500px;
+  max-height:92vh;overflow-y:auto;
+}
+.mbox::-webkit-scrollbar{width:3px}
+.mbox::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.mtitle{
+  font-family:'Barlow Condensed',sans-serif;font-weight:700;
+  font-size:21px;color:#fff;letter-spacing:1px;margin-bottom:20px;
+}
+/* ══ TAB GROUP ══ */
+.tabg{
+  display:flex;gap:4px;background:rgba(0,0,0,0.35);
+  border-radius:12px;padding:4px;margin-bottom:22px;
+}
+.tabg .t{
+  flex:1;padding:10px 4px;border:none;border-radius:9px;
+  font-family:'Barlow Condensed',sans-serif;font-weight:700;
+  font-size:14px;letter-spacing:1px;text-transform:uppercase;
+  cursor:pointer;background:transparent;color:var(--muted);transition:all 0.2s;
+}
+.tabg .t.on{background:var(--p);color:#000}
+
+/* ══ PILLS ══ */
+.pills{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:16px}
+.pill{
+  background:var(--s2);border:none;border-radius:10px;
+  padding:7px 15px;font-family:'Barlow Condensed',sans-serif;
+  font-weight:700;font-size:13px;color:rgba(255,255,255,0.6);
+  cursor:pointer;transition:all 0.2s;
+}
+.pill.on{background:var(--p);color:#000}
+
+/* ══ WIN BAR ══ */
+.wbar{height:8px;border-radius:5px;overflow:hidden;display:flex;gap:3px}
+.wseg{border-radius:4px;transition:flex 0.5s;min-width:0}
+
+/* ══ PLAYER CARD ══ */
+.pcard{
+  background:var(--s1);border:1px solid var(--border);
+  border-radius:16px;padding:14px 16px;transition:all 0.22s;
+  position:relative;overflow:hidden;
+}
+.pcard:hover{border-color:rgba(255,255,255,0.16)}
+.pcard.sel{background:rgba(0,200,83,0.08);border-color:var(--p);box-shadow:0 0 22px var(--glow)}
+.avatar{
+  border-radius:50%;flex-shrink:0;display:flex;align-items:center;
+  justify-content:center;font-family:'Barlow Condensed',sans-serif;
+  font-weight:700;letter-spacing:1px;
+}
+.sbar{height:4px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden;margin-top:3px}
+.sbar-f{height:100%;border-radius:2px;transition:width 0.6s ease}
+
+/* ══ SQUAD ══ */
+.sq-hd{
+  background:var(--s1);border:1px solid var(--border);
+  border-radius:16px;padding:15px 18px;margin-bottom:8px;
+  cursor:pointer;transition:border-color 0.2s;
+}
+.sq-hd:hover{border-color:rgba(255,255,255,0.16)}
+.sq-body{
+  background:rgba(0,0,0,0.2);border:1px solid var(--border);border-top:none;
+  border-radius:0 0 14px 14px;padding:10px;margin-bottom:10px;display:none;
+}
+.sq-body.on{display:block}
+.mini-p{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 10px;border-radius:10px;position:relative;transition:background 0.2s;
+}
+.mini-p:hover{background:rgba(255,255,255,0.04)}
+.del-x{
+  position:absolute;right:8px;top:50%;transform:translateY(-50%);
+  background:rgba(239,83,80,0.75);border:none;border-radius:50%;
+  width:21px;height:21px;color:#fff;font-size:11px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+}
+
+/* ══ MATCH CARD ══ */
+.match-c{
+  background:var(--s1);border-radius:15px;
+  padding:15px 18px;margin-bottom:12px;
+}
+.m-score{
+  font-family:'Barlow Condensed',sans-serif;font-weight:800;
+  font-size:30px;color:#fff;line-height:1;
+}
+.m-score .sep{font-size:18px;color:var(--muted);font-weight:400}
+
+/* ══ SHUFFLE CARD ══ */
+.sh-c{
+  height:88px;border-radius:16px;position:relative;overflow:hidden;
+  cursor:pointer;display:flex;align-items:center;
+  background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);
+  transition:all 0.38s cubic-bezier(.175,.885,.32,1.275);
+}
+.sh-c.rev{transform:scale(1.02)}
+.tap-h{
+  width:100%;display:flex;align-items:center;justify-content:center;gap:8px;
+  font-family:'Barlow Condensed',sans-serif;font-size:12px;
+  color:rgba(255,255,255,0.24);letter-spacing:2px;
+}
+.sh-inner{padding:0 16px;width:100%;display:flex;align-items:center;gap:12px}
+
+/* ══ RANK ══ */
+.rank-item{
+  background:var(--s1);border:1px solid var(--border);border-radius:15px;
+  padding:13px 15px;margin-bottom:10px;cursor:pointer;transition:border-color 0.2s;
+}
+.rank-item:hover{border-color:rgba(255,255,255,0.15)}
+.rank-n{
+  font-family:'Barlow Condensed',sans-serif;font-weight:800;
+  font-size:22px;color:var(--muted);width:26px;flex-shrink:0;
+}
+.rank-n.top{color:var(--p)}
+
+/* ══ PULSE ══ */
+#pulse{
+  display:none;position:fixed;inset:0;
+  pointer-events:none;z-index:300;
+  align-items:center;justify-content:center;
+}
+#pulse.on{display:flex}
+.pr{
+  position:absolute;border-radius:50%;border:2px solid var(--p);
+  animation:pr 1.2s ease-out infinite;
+}
+@keyframes pr{0%{transform:scale(0.4);opacity:0.8}100%{transform:scale(2.2);opacity:0}}
+
+/* ══ LOGIN ══ */
+#login-w{
+  min-height:100vh;display:none;align-items:center;
+  justify-content:center;padding:20px;flex-direction:column;gap:0;
+}
+#login-w.on{display:flex}
+#app-w{display:none}
+#app-w.on{display:block}
+.login-box{width:100%;max-width:400px}
+.lg-logo{text-align:center;margin-bottom:30px}
+.lg-em{font-size:52px;margin-bottom:10px}
+.lg-t{
+  font-family:'Barlow Condensed',sans-serif;font-weight:900;
+  font-size:40px;color:#fff;letter-spacing:3px;
+}
+.lg-s{font-size:11px;color:var(--muted);letter-spacing:3px;margin-top:4px}
+.login-card{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:22px;padding:28px}
+
+/* ══ TOAST ══ */
+#toast{
+  position:fixed;bottom:calc(var(--nav-h) + 64px);left:50%;
+  transform:translateX(-50%);background:#1e2430;
+  border:1px solid rgba(255,255,255,0.15);border-radius:12px;
+  padding:10px 22px;font-size:13px;font-weight:500;color:#fff;
+  z-index:999;display:none;white-space:nowrap;
+  box-shadow:0 8px 32px rgba(0,0,0,0.5);
+}
+#toast.on{display:block;animation:tslide 0.28s ease}
+@keyframes tslide{from{opacity:0;transform:translateX(-50%) translateY(8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+
+/* ══ LOADER ══ */
+.spin{display:inline-block;width:15px;height:15px;border:2px solid rgba(255,255,255,0.2);border-top-color:#fff;border-radius:50%;animation:sp 0.7s linear infinite;vertical-align:middle}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* ══ EMPTY STATE ══ */
+.empty{
+  text-align:center;padding:44px 18px;
+  background:rgba(255,255,255,0.02);
+  border:1px dashed rgba(255,255,255,0.1);
+  border-radius:18px;margin-bottom:18px;
+}
+.empty .ei{font-size:42px;margin-bottom:12px}
+.empty .et{
+  font-family:'Barlow Condensed',sans-serif;font-size:19px;
+  color:rgba(255,255,255,0.36);font-weight:700;letter-spacing:1px;
+}
+.empty .es{font-size:13px;color:var(--muted);margin:8px 0 18px}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════
+     LOGIN SCREEN
+════════════════════════════════════════ -->
+<div id="login-w" class="on">
+  <div class="login-box">
+    <div class="lg-logo">
+      <div class="lg-em">🏟️</div>
+      <div class="lg-t">SQUAD<span style="color:var(--p)">PRO</span></div>
+      <div class="lg-s">TEAM SPORTS MANAGER</div>
+    </div>
+
+    <!-- LOGIN TOP AD -->
+    <div class="ad-box" style="margin-bottom:20px">
+      <ins class="adsbygoogle" style="display:block;width:100%;height:90px"
+        data-ad-client="ca-pub-7886352885286237"
+        data-ad-slot="auto" data-ad-format="rectangle"
+        data-full-width-responsive="true"></ins>
+    </div>
+
+    <div class="login-card">
+      <div class="tabg">
+        <button class="t on" id="t-li" onclick="switchTab('login')">LOGIN</button>
+        <button class="t" id="t-su" onclick="switchTab('signup')">SIGN UP</button>
+      </div>
+      <div id="f-name" class="field" style="display:none">
+        <label>Full Name</label>
+        <input id="a-name" type="text" placeholder="Your name"/>
+      </div>
+      <div class="field">
+        <label>Email</label>
+        <input id="a-email" type="email" placeholder="you@email.com"/>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input id="a-pass" type="password" placeholder="••••••••"/>
+      </div>
+      <div id="a-err" class="err" style="display:none"></div>
+      <button class="btn btn-p btn-f" id="a-btn" onclick="doAuth()">SIGN IN</button>
+      <div style="text-align:center;margin-top:14px;font-size:12px;color:var(--muted)">
+        Your data is saved locally &amp; in the cloud
+      </div>
+    </div>
+
+    <!-- LOGIN BOTTOM AD -->
+    <div class="ad-box">
+      <ins class="adsbygoogle" style="display:block;width:100%;height:90px"
+        data-ad-client="ca-pub-7886352885286237"
+        data-ad-slot="auto" data-ad-format="rectangle"
+        data-full-width-responsive="true"></ins>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     MAIN APP
+════════════════════════════════════════ -->
+<div id="app-w">
+
+  <!-- TOP AD BANNER -->
+  <div class="ad-banner-top">
+    <ins class="adsbygoogle" style="display:block;width:100%;height:60px"
+      data-ad-client="ca-pub-7886352885286237"
+      data-ad-slot="auto" data-ad-format="leaderboard"
+      data-full-width-responsive="true"></ins>
+  </div>
+
+  <!-- TOPBAR -->
+  <div id="topbar">
+    <div id="logo">SQUAD<span>PRO</span></div>
+    <div id="sport-tabs">
+      <button class="sp-btn on" data-sp="football" onclick="setSport('football')" title="Football">⚽</button>
+      <button class="sp-btn" data-sp="cricket"    onclick="setSport('cricket')"    title="Cricket">🏏</button>
+      <button class="sp-btn" data-sp="basketball" onclick="setSport('basketball')" title="Basketball">🏀</button>
+      <button class="sp-btn" data-sp="volleyball" onclick="setSport('volleyball')" title="Volleyball">🏐</button>
+      <button class="sp-btn" data-sp="hockey"     onclick="setSport('hockey')"     title="Hockey">🏒</button>
+    </div>
+    <button id="exit-btn" onclick="doLogout()">EXIT</button>
+  </div>
+
+  <!-- SPORT BANNER -->
+  <div id="sport-banner">
+    <span id="b-icon">⚽</span>
+    <span id="b-name">FOOTBALL MODE</span>
+    <span id="b-fmt">11v11 format</span>
+  </div>
+
+  <!-- ══════════ DASHBOARD ══════════ -->
+  <div class="screen on" id="sc-dashboard">
+    <div style="margin-bottom:20px">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:26px;color:#fff;letter-spacing:1px" id="welcome-msg">WELCOME BACK 👋</div>
+      <div id="date-line" style="color:var(--muted);font-size:13px;margin-top:3px"></div>
+    </div>
+
+    <!-- Stat chips -->
+    <div class="g4" style="margin-bottom:20px">
+      <div class="stat-chip"><div class="ico">👥</div><div class="val" id="d-sq">0</div><div class="lbl">Squads</div></div>
+      <div class="stat-chip"><div class="ico">🏃</div><div class="val" id="d-pl">0</div><div class="lbl">Players</div></div>
+      <div class="stat-chip"><div class="ico">🏟️</div><div class="val" id="d-ma">0</div><div class="lbl">Matches</div></div>
+      <div class="stat-chip"><div class="ico">🏆</div><div class="val" id="d-wr">0%</div><div class="lbl">Win Rate</div></div>
+    </div>
+
+    <!-- DASHBOARD AD 1 -->
+    <div class="ad-box">
+      <ins class="adsbygoogle" style="display:block;width:100%;height:90px"
+        data-ad-client="ca-pub-7886352885286237"
+        data-ad-slot="auto" data-ad-format="rectangle"
+        data-full-width-responsive="true"></ins>
+    </div>
+
+    <!-- Win record bar -->
+    <div id="d-wbar" style="display:none;margin-bottom:20px">
+      <div class="card">
+        <div class="sec-sub">Match Record</div>
+        <div class="wbar" style="margin:10px 0">
+          <div class="wseg" id="ws-w" style="background:var(--p);flex:1"></div>
+          <div class="wseg" id="ws-d" style="background:var(--warn);flex:0"></div>
+          <div class="wseg" id="ws-l" style="background:var(--danger);flex:0"></div>
+        </div>
+        <div class="row" style="gap:16px;font-size:13px">
+          <span style="color:var(--p);font-weight:700" id="wl-w">0W</span>
+          <span style="color:var(--warn);font-weight:700" id="wl-d">0D</span>
+          <span style="color:var(--danger);font-weight:700" id="wl-l">0L</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- DASHBOARD AD 2 -->
+    <div class="ad-box">
+      <ins class="adsbygoogle" style="display:block;width:100%;height:90px"
+        data-ad-client="ca-pub-7886352885286237"
+        data-ad-slot="auto" data-ad-format="rectangle"
+        data-full-width-responsive="true"></ins>
+    </div>
+
+    <!-- Recent matches -->
+    <div id="d-recent" style="display:none;margin-bottom:20px">
+      <div class="sec-sub">Recent Matches</div>
+      <div id="d-recent-list"></div>
+    </div>
+
+    <!-- Top performers -->
+    <div id="d-top" style="display:none;margin-bottom:20px">
+      <div class="sec-sub">Top Performers</div>
+      <div id="d-top-list"></div>
+    </div>
+
+    <!-- DASHBOARD AD 3 -->
+    <div class="ad-box">
+      <ins class="adsbygoogle" style="display:block;width:100%;height:90px"
+        data-ad-client="ca-pub-7886352885286237"
+        data-ad-slot="auto" data-ad-format="rectangle"
+        data-full-width-responsive="true"></ins>
+    </div>
+
+    <!-- Empty CTA -->
+    <div id="d-empty" class="empty" style="display:none">
+      <div class="ei">🏟️</div>
+      <div class="et">NO SQUADS YET</div>
+      <div class="es">Create your first squad and start managing your team</div>
+      <button class="btn btn-p" onclick="goScreen('squad')">CREATE SQUAD</button>
+    </div>
+  </div>
+
+  <!-- ══════════ SQUAD ══════════ -->
+  <div class="screen" id="sc-squad">
+    <div class="row-b" style="margin-bottom:20px">
+      <div class="sec-title" style="margin-bottom:0">MY SQUADS</div>
+      <button class="btn btn-p btn-sm" onclick="openM('m-newsquad')">+ NEW SQUAD</button>
+    </div>
+
+    <!-- SQUAD TOP AD -->
+    <div class="ad-box">
+      <ins class="adsbygoogle" style="display:block;width:100%;height:90px"
+        data-ad-client="ca-pub-7886352885286237"
+        data-ad-slot="auto" data-ad-format="rectangle"
+        data-full-width-responsive="true"></ins>
+    </div>
+
+    <div id="squad-list"></div>
+
+    <!-- SQUAD BOTTOM AD -->
+    <div class="ad-box">
+      <ins class="adsbygoogle" style="display:block;width:100%;height:90px"
+        data-ad-client="ca-pub-7886352885286237"
+        data-ad-slot="auto" data-ad-format="rectangle"
+        data-full-width-responsive="true"></ins>
+    </div>
+  </div>
+
+  <!-- ══════════ SHUFFLE ══════════ -->
+  <div class="screen" id="sc-shuffle">
+    <div class="sec-title">TEAM SHUFFLE</div>
+
+    <!-- SHUFFLE TOP AD -->
+    <div class="ad-box">
+      <ins class="adsbygoogle" style="display:block;width:100%;height:90px"
+        data-ad-client="ca-pub-7886352885286237"
+        data-ad-slot="auto" data-ad-format="rectangle"
+        data-full-width-responsive="true"></ins>
+    </div>
+
+    <div class="card" style="margin-bottom:20px">
+      <div class="g2" style="margin-bottom:14px">
+        <div class="field" style="margin-bottom:0">
+          <label>Squad</label>
+          <select id="sh-sq"><option value="">All Players</option></select>
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;font-family:'Barlow Condensed',sans-serif;margin-bottom:8px">Team Size</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap" id="sh-sizes">
+            <button class="pill" onclick="setTS(3)">3v3</button>
+            <button class="pill on" onclick="setTS(5)">5v5</button>
+            <button class="pill" onclick="setTS(6)">6v6</button>
+            <button class="pill" onclick="setTS(7)">7v7</button>
+            <button class="pill" onclick="setTS(11)">11v11</button>
+          </div>
+        </div>
+      </div>
+      <div class="g2" style="margin-bottom:14px">
+        <div class="field" style="margin-bottom:0"><label>Team A Name</label><input id="sh-na" value="Team A"/></div>
+        <div class="field" style="margin-bottom:0"><label>Team B Name</label><input id="sh-nb" value="Team B"/></div>
+      </div>
+      <div id="sh-info" style="font-size:13px;color:var(--muted);margin-bottom:14px"></div>
+      <div class="row" style="flex-wrap:wrap;gap:10px">
+        <button class="btn btn-p" id="sh-btn" onclick="doShuffle()">🎲 START DRAW</button>
+        <button class="btn btn-s" id="sh-rev-btn" style="display:none" onclick="revealAll()">👁 REVEAL ALL</button>
+        <button class="btn btn-s" id="sh-wa-btn" style="display:none" onclick="shareWA()">📤 WHATSAPP</button>
+      </div>
+      <div id="sh-ct" style="margin-top:10px;font-size:12px;color:var(--a);display:none"></div>
+    </div>
+
+    <!-- SHUFFLE MID AD (shows after draw) -->
+    <div class="ad-box" id="sh-ad" style="display:none">
+      <ins class="adsbygoogle" style="display:block;width:100%;height:90px"
+        data-ad-client="ca-pub-7886352885286237"
+        data-ad-slot="auto" data-ad-format="rectangle"
+        data-full-width-responsive="true"></ins>
+    </div>
+
+    <div id="sh-result" style="display:none">
+      <div class="g2">
+        <div>
+          <div id="sh-la" style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:20px;color:var(--p);letter-spacing:1px;margin-bottom:12px">TEAM A</div>
+          <div id="sh-ta" style="display:flex;flex-direction:column;gap:9px"></div>
+        </div>
+        <div>
+          <div id="sh-lb" style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:20px;color:var(--a);letter-spacing:1px;margin-bottom:12px">TEAM B</div>
+          <div id="sh-tb" style="display:flex;flex-direction:column;gap:9px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SHUFFLE BOTTOM AD -->
+    <div class="ad-box" style="margin-top:20px">
+      <ins class="adsbygoogle" style="display:block;width:100%;height:90px"
+        data-ad-client="ca-pub-7886352885286237"
+        data-ad-slot="auto" data-ad-format="rectangle"
+        data-full-width-responsive="true"></ins>
+    </div>
+  </div>
+
+  <!-- ══════════ MATCHES ══════════ -->
+  <div class="screen" id="sc-match">
+    <div class="row-b" style="margin-bottom:20px">
+      <div class="sec-title" style="margin-bottom:0">MATCH HISTORY</div>
+      <button class="btn btn-p btn-sm" onclick="openM('m-logmatch')">+ LOG MATCH</button>
+    </div>
+
+    <!-- MATCH TOP AD -->
+    <div class="ad-box">
+      <ins class="adsbygoogle" style="display:block;width:100%;height:90px"
+        data-ad-client="ca-pub-7886352885286237"
+        data-ad-slot="auto" data-ad-format="rectangle"
+        data-full-width-responsive="true"></ins>
+    </div>
+
+    <div id="match-list"></div>
+
+    <!-- MATCH BOTTOM AD -->
+    <div class="ad-box">
+      <ins class="adsbygoogle" style="display:block;width:100%;height:90px"
+        data-ad-client="ca-pub-7886352885286237"
+        data-ad-slot="auto" data-ad-format="rectangle"
+        data-full-width-responsive="true"></ins>
+    </div>
+  </div>
+
+  <!-- ══════════ STATS ══════════ -->
+  <div class="screen" id="sc-stats">
+    <div class="sec-title">PLAYER STATS</div>
+
+    <!-- STATS TOP AD -->
+    <div class="ad-box">
+      <ins class="adsbygoogle" style="display:block;width:100%;height:90px"
+        data-ad-client="ca-pub-7886352885286237"
+        data-ad-slot="auto" data-ad-format="rectangle"
+        data-full-width-responsive="true"></ins>
+    </div>
+
+    <div class="pills" id="stats-pills"></div>
+    <div id="stats-list"></div>
+
+    <!-- STATS BOTTOM AD -->
+    <div class="ad-box">
+      <ins class="adsbygoogle" style="display:block;width:100%;height:90px"
+        data-ad-client="ca-pub-7886352885286237"
+        data-ad-slot="auto" data-ad-format="rectangle"
+        data-full-width-responsive="true"></ins>
+    </div>
+  </div>
+
+  <!-- STICKY AD ABOVE NAV -->
+  <div class="ad-sticky-bar">
+    <ins class="adsbygoogle" style="display:block;width:320px;height:50px"
+      data-ad-client="ca-pub-7886352885286237"
+      data-ad-slot="auto" data-ad-format="banner"></ins>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav id="nav">
+    <button class="nb on" data-sc="dashboard" onclick="goScreen('dashboard')">
+      <span class="ni">🏠</span><span class="nl">Home</span><div class="nd"></div>
+    </button>
+    <button class="nb" data-sc="squad" onclick="goScreen('squad')">
+      <span class="ni">👥</span><span class="nl">Squad</span><div class="nd"></div>
+    </button>
+    <button class="nb" data-sc="shuffle" onclick="goScreen('shuffle')">
+      <span class="ni">🎲</span><span class="nl">Shuffle</span><div class="nd"></div>
+    </button>
+    <button class="nb" data-sc="match" onclick="goScreen('match')">
+      <span class="ni">🏟️</span><span class="nl">Matches</span><div class="nd"></div>
+    </button>
+    <button class="nb" data-sc="stats" onclick="goScreen('stats')">
+      <span class="ni">📊</span><span class="nl">Stats</span><div class="nd"></div>
+    </button>
+  </nav>
+</div>
+
+<!-- ═══ MODALS ═══ -->
+
+<!-- New Squad -->
+<div class="overlay" id="m-newsquad" onclick="closeOut(event,'m-newsquad')">
+  <div class="mbox">
+    <div class="mtitle">NEW SQUAD</div>
+    <div class="field"><label>Squad Name</label><input id="ns-name" placeholder="e.g. FC Thunder"/></div>
+    <button class="btn btn-p btn-f" onclick="createSquad()">CREATE SQUAD</button>
+  </div>
+</div>
+
+<!-- Add Players -->
+<div class="overlay" id="m-addplayer" onclick="closeOut(event,'m-addplayer')">
+  <div class="mbox">
+    <div class="mtitle">ADD PLAYERS</div>
+    <!-- bulk -->
+    <div style="margin-bottom:20px">
+      <div style="font-size:10px;color:var(--muted);letter-spacing:1px;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;margin-bottom:9px">Bulk Add (one name per line)</div>
+      <div class="field"><textarea id="bulk-t" rows="5" placeholder="Player One&#10;Player Two&#10;Player Three&#10;..."></textarea></div>
+      <button class="btn btn-p btn-f" onclick="addBulk()">ADD ALL</button>
+    </div>
+    <!-- single -->
+    <div style="border:1px solid var(--border);border-radius:14px;padding:16px">
+      <div style="font-size:10px;color:var(--muted);letter-spacing:1px;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;margin-bottom:11px">Single Player</div>
+      <div class="field"><label>Name</label><input id="p-name" placeholder="Player name"/></div>
+      <div class="field"><label>Position</label><select id="p-pos"></select></div>
+      <div class="field"><label>Jersey #</label><input type="number" id="p-jer" placeholder="10"/></div>
+      <button class="btn btn-p btn-f btn-sm" onclick="addSingle()">ADD PLAYER</button>
+    </div>
+  </div>
+</div>
+
+<!-- Log Match -->
+<div class="overlay" id="m-logmatch" onclick="closeOut(event,'m-logmatch')">
+  <div class="mbox">
+    <div class="mtitle">LOG MATCH</div>
+    <div class="g2" style="margin-bottom:10px">
+      <div class="field" style="margin-bottom:0"><label>Team A</label><input id="m-ta" placeholder="Team name"/></div>
+      <div class="field" style="margin-bottom:0"><label>Team B</label><input id="m-tb" placeholder="Team name"/></div>
+    </div>
+    <div class="g2" style="margin-bottom:14px">
+      <div class="field" style="margin-bottom:0"><label>Score A</label><input type="number" id="m-sa" value="0"/></div>
+      <div class="field" style="margin-bottom:0"><label>Score B</label><input type="number" id="m-sb" value="0"/></div>
+    </div>
+    <div style="margin-bottom:15px">
+      <div style="font-size:10px;color:var(--muted);letter-spacing:1px;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;margin-bottom:9px">Result</div>
+      <div class="row" style="gap:8px">
+        <button class="pill on" id="r-win"  onclick="setResult('win')">WIN</button>
+        <button class="pill"    id="r-draw" onclick="setResult('draw')">DRAW</button>
+        <button class="pill"    id="r-loss" onclick="setResult('loss')">LOSS</button>
+      </div>
+    </div>
+    <div class="field"><label>Notes (optional)</label><input id="m-notes" placeholder="Man of the match, highlights..."/></div>
+    <button class="btn btn-p btn-f" onclick="logMatch()">SAVE MATCH</button>
+  </div>
+</div>
+
+<!-- Edit Stats -->
+<div class="overlay" id="m-editstats" onclick="closeOut(event,'m-editstats')">
+  <div class="mbox">
+    <div class="mtitle" id="edit-title">EDIT STATS</div>
+    <div id="edit-fields"></div>
+    <div class="field"><label>Matches Played</label><input type="number" id="edit-matches" value="0"/></div>
+    <div class="field"><label>MVP Awards</label><input type="number" id="edit-mvp" value="0"/></div>
+    <button class="btn btn-p btn-f" onclick="saveStats()">SAVE STATS</button>
+  </div>
+</div>
+
+<!-- Pulse overlay -->
+<div id="pulse">
+  <div class="pr" style="width:180px;height:180px;animation-delay:0s"></div>
+  <div class="pr" style="width:300px;height:300px;animation-delay:0.3s"></div>
+  <div class="pr" style="width:420px;height:420px;animation-delay:0.6s"></div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<!-- ════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════ -->
+<script>
+'use strict';
+
+/* ── CONSTANTS ───────────────────────────────────────── */
+const SPORTS = [
+  {id:'football',  name:'Football',   icon:'⚽', color:'#00C853', players:11},
+  {id:'cricket',   name:'Cricket',    icon:'🏏', color:'#FF6D00', players:11},
+  {id:'basketball',name:'Basketball', icon:'🏀', color:'#F57C00', players:5},
+  {id:'volleyball',name:'Volleyball', icon:'🏐', color:'#1565C0', players:6},
+  {id:'hockey',    name:'Hockey',     icon:'🏒', color:'#6A1B9A', players:11},
+];
+const STAT_LABELS = {
+  football:   ['Goals','Assists','Clean Sheets'],
+  cricket:    ['Runs','Wickets','Catches'],
+  basketball: ['Points','Rebounds','Assists'],
+  volleyball: ['Points','Aces','Blocks'],
+  hockey:     ['Goals','Assists','Saves'],
+};
+const POSITIONS = {
+  football:   ['GK','CB','LB','RB','CDM','CM','CAM','LW','RW','ST','CF'],
+  cricket:    ['Batsman','Bowler','All-Rounder','Wicket-Keeper','Opening Bat'],
+  basketball: ['PG','SG','SF','PF','C'],
+  volleyball: ['Setter','Libero','OH','MB','RS','Opp'],
+  hockey:     ['GK','Def','Mid','Fwd','Wing'],
+};
+const THEMES = {
+  football:   {p:'#00C853',a:'#69F0AE',g:'rgba(0,200,83,0.28)'},
+  cricket:    {p:'#FF6D00',a:'#FFD740',g:'rgba(255,109,0,0.28)'},
+  basketball: {p:'#F57C00',a:'#FFAB40',g:'rgba(245,124,0,0.28)'},
+  volleyball: {p:'#1565C0',a:'#40C4FF',g:'rgba(21,101,192,0.28)'},
+  hockey:     {p:'#6A1B9A',a:'#EA80FC',g:'rgba(106,27,154,0.28)'},
+};
+
+/* ── STATE ───────────────────────────────────────────── */
+let user   = null;
+let sport  = 'football';
+let screen = 'dashboard';
+let squads = [];
+let matches= [];
+let authMode  = 'login';
+let mResult   = 'win';
+let editPid   = null; // { pid, squadIdx }
+let addSqId   = null;
+let shTA=[], shTB=[], shSize=5, shRev={a:[],b:[]}, shCnt=0;
+let statsFilter='all';
+
+/* ── HELPERS ─────────────────────────────────────────── */
+const uid   = ()=>Math.random().toString(36).slice(2,9);
+const th    = ()=>THEMES[sport];
+const spObj = ()=>SPORTS.find(s=>s.id===sport);
+const sLbl  = ()=>STAT_LABELS[sport]||STAT_LABELS.football;
+const rc    = r=>r==='win'?'var(--p)':r==='loss'?'var(--danger)':'var(--warn)';
+const $     = id=>document.getElementById(id);
+
+function avt(name,sz,color){
+  const init=name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  return `<div class="avatar" style="width:${sz}px;height:${sz}px;background:linear-gradient(135deg,${color}33,${color}66);border:1.5px solid ${color}88;color:${color};font-size:${Math.round(sz*0.34)}px">${init}</div>`;
+}
+
+function toast(msg,dur=2800){
+  const el=$('toast'); el.textContent=msg;
+  el.classList.add('on');
+  clearTimeout(el._t);
+  el._t=setTimeout(()=>el.classList.remove('on'),dur);
+}
+
+function openM(id){
+  $(id).classList.add('on');
+  document.body.style.overflow='hidden';
+}
+function closeM(id){
+  $(id).classList.remove('on');
+  document.body.style.overflow='';
+}
+function closeOut(e,id){if(e.target.id===id)closeM(id);}
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape')
+    document.querySelectorAll('.overlay.on').forEach(m=>m.classList.remove('on'));
+});
+
+/* ── PERSIST ─────────────────────────────────────────── */
+function save(){
+  try{
+    localStorage.setItem('sp_squads', JSON.stringify(squads));
+    localStorage.setItem('sp_matches',JSON.stringify(matches));
+    if(user) localStorage.setItem('sp_user',JSON.stringify(user));
+  }catch(e){}
+}
+function load(){
+  try{
+    user    = JSON.parse(localStorage.getItem('sp_user')||'null');
+    squads  = JSON.parse(localStorage.getItem('sp_squads')||'[]');
+    matches = JSON.parse(localStorage.getItem('sp_matches')||'[]');
+  }catch(e){ squads=[]; matches=[]; }
+}
+
+/* ── ADSENSE INIT ────────────────────────────────────── */
+function initAds(){
+  try{
+    window.adsbygoogle=window.adsbygoogle||[];
+    document.querySelectorAll('.adsbygoogle:not([data-adsbygoogle-status])').forEach(()=>{
+      adsbygoogle.push({});
+    });
+  }catch(e){}
+}
+
+/* ── BOOT ────────────────────────────────────────────── */
+window.addEventListener('DOMContentLoaded',()=>{
+  load();
+  $('date-line').textContent = new Date().toDateString();
+  if(user){ showApp(); }
+  initAds();
+});
+
+/* ── AUTH ────────────────────────────────────────────── */
+function switchTab(mode){
+  authMode=mode;
+  $('t-li').classList.toggle('on',mode==='login');
+  $('t-su').classList.toggle('on',mode==='signup');
+  $('f-name').style.display=mode==='signup'?'block':'none';
+  $('a-btn').textContent=mode==='login'?'SIGN IN':'CREATE ACCOUNT';
+  $('a-err').style.display='none';
+}
+
+function doAuth(){
+  const email=$('a-email').value.trim();
+  const pass =$('a-pass').value;
+  const name =$('a-name').value.trim();
+  const errEl=$('a-err');
+  errEl.style.display='none';
+  if(!email||!pass){ errEl.style.display='block'; errEl.textContent='Please fill all fields.'; return; }
+  if(authMode==='signup'&&!name){ errEl.style.display='block'; errEl.textContent='Enter your name.'; return; }
+
+  let users=[];
+  try{ users=JSON.parse(localStorage.getItem('sp_users')||'[]'); }catch(e){}
+
+  if(authMode==='signup'){
+    if(users.find(u=>u.email===email)){ errEl.style.display='block'; errEl.textContent='Email already registered.'; return; }
+    user={id:uid(),name,email,joined:Date.now()};
+    users.push({...user,pass});
+    localStorage.setItem('sp_users',JSON.stringify(users));
+    save(); showApp();
+  } else {
+    const found=users.find(u=>u.email===email&&u.pass===pass);
+    if(!found){ errEl.style.display='block'; errEl.textContent='Invalid email or password.'; return; }
+    user={id:found.id,name:found.name,email:found.email,joined:found.joined};
+    save(); showApp();
+  }
+}
+
+function showApp(){
+  $('login-w').classList.remove('on');
+  $('app-w').classList.add('on');
+  $('welcome-msg').textContent='WELCOME BACK, '+(user.name||'').split(' ')[0].toUpperCase()+' 👋';
+  renderAll();
+}
+
+function doLogout(){
+  user=null;
+  localStorage.removeItem('sp_user');
+  $('app-w').classList.remove('on');
+  $('login-w').classList.add('on');
+  $('a-email').value='';
+  $('a-pass').value='';
+}
+
+/* ── SPORT / THEME ───────────────────────────────────── */
+function setSport(s){
+  sport=s;
+  const t=THEMES[s], sp=spObj();
+  document.documentElement.style.setProperty('--p', t.p);
+  document.documentElement.style.setProperty('--a', t.a);
+  document.documentElement.style.setProperty('--glow', t.g);
+  document.querySelectorAll('.sp-btn').forEach(b=>b.classList.toggle('on',b.dataset.sp===s));
+  $('b-icon').textContent=sp.icon;
+  $('b-name').textContent=sp.name.toUpperCase()+' MODE';
+  $('b-fmt').textContent=sp.players+'v'+sp.players+' format';
+  renderAll();
+}
+
+/* ── NAVIGATION ──────────────────────────────────────── */
+function goScreen(id){
+  screen=id;
+  document.querySelectorAll('.screen').forEach(el=>el.classList.toggle('on',el.id==='sc-'+id));
+  document.querySelectorAll('.nb').forEach(b=>b.classList.toggle('on',b.dataset.sc===id));
+  renderScreen(id);
+}
+function renderAll(){ renderScreen(screen); }
+function renderScreen(id){
+  if(id==='dashboard') renderDash();
+  if(id==='squad')     renderSquads();
+  if(id==='shuffle')   renderShSetup();
+  if(id==='match')     renderMatches();
+  if(id==='stats')     renderStats();
+}
+
+/* ── DASHBOARD ───────────────────────────────────────── */
+function renderDash(){
+  const sq=squads.filter(s=>s.sport===sport);
+  const pl=sq.reduce((a,s)=>a+s.players.length,0);
+  const ma=matches.filter(m=>m.sport===sport);
+  const wins=ma.filter(m=>m.result==='win').length;
+  const losses=ma.filter(m=>m.result==='loss').length;
+  const draws=ma.filter(m=>m.result==='draw').length;
+  const tot=ma.length;
+  const wr=tot?Math.round((wins/tot)*100):0;
+
+  $('d-sq').textContent=sq.length;
+  $('d-pl').textContent=pl;
+  $('d-ma').textContent=tot;
+  $('d-wr').textContent=wr+'%';
+
+  // Win bar
+  const wb=$('d-wbar');
+  if(tot>0){
+    wb.style.display='block';
+    $('ws-w').style.flex=wins||0.001;
+    $('ws-d').style.flex=draws||0.001;
+    $('ws-l').style.flex=losses||0.001;
+    $('wl-w').textContent=wins+'W';
+    $('wl-d').textContent=draws+'D';
+    $('wl-l').textContent=losses+'L';
+  }else{ wb.style.display='none'; }
+
+  // Recent matches
+  const last5=[...ma].sort((a,b)=>b.date-a.date).slice(0,5);
+  const rw=$('d-recent');
+  if(last5.length){
+    rw.style.display='block';
+    $('d-recent-list').innerHTML=last5.map(m=>`
+      <div style="display:flex;align-items:center;gap:11px;background:var(--s1);border-radius:12px;padding:11px 15px;border:1px solid var(--border);margin-bottom:8px">
+        <div style="width:8px;height:8px;border-radius:50%;background:${rc(m.result)};flex-shrink:0"></div>
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:500;color:#fff">${m.teamA} <span style="color:var(--muted)">vs</span> ${m.teamB}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">${m.sport} · ${new Date(m.date).toLocaleDateString()}</div>
+        </div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;color:${rc(m.result)}">${m.scoreA}-${m.scoreB}</div>
+      </div>`).join('');
+  }else{ rw.style.display='none'; }
+
+  // Top performers
+  const top=sq.flatMap(s=>s.players).sort((a,b)=>(b.stats?.[0]||0)-(a.stats?.[0]||0)).slice(0,5);
+  const tw=$('d-top');
+  if(top.length){
+    tw.style.display='block';
+    const P=th().p, A=th().a;
+    $('d-top-list').innerHTML=top.map((p,i)=>`
+      <div style="display:flex;align-items:center;gap:11px;background:var(--s1);border-radius:12px;padding:10px 15px;border:1px solid ${i===0?P+'44':'var(--border)'};margin-bottom:7px">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:20px;color:${i===0?P:'var(--muted)'};width:24px">${i+1}</div>
+        ${avt(p.name,36,P)}
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:500;color:#fff">${p.name}</div>
+          <div style="font-size:11px;color:var(--muted)">${p.position||'Player'}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:20px;color:${A}">${p.stats?.[0]||0}</div>
+          <div style="font-size:10px;color:var(--muted)">${sLbl()[0]}</div>
+        </div>
+      </div>`).join('');
+  }else{ tw.style.display='none'; }
+
+  $('d-empty').style.display=sq.length===0?'block':'none';
+}
+
+/* ── SQUADS ──────────────────────────────────────────── */
+function renderSquads(){
+  const sq=squads.filter(s=>s.sport===sport);
+  const P=th().p;
+  const c=$('squad-list');
+  if(!sq.length){
+    c.innerHTML=`<div class="empty">
+      <div class="ei">👥</div>
+      <div class="et">NO SQUADS YET</div>
+      <div class="es">Create your first squad for ${spObj().name}</div>
+      <button class="btn btn-p" onclick="openM('m-newsquad')">+ NEW SQUAD</button>
+    </div>`;
+    return;
+  }
+  c.innerHTML=sq.map((s,si)=>{
+    const sqIdx=squads.indexOf(s);
+    return `
+    <div>
+      <div class="sq-hd" onclick="toggleSq('sqb-${s.id}')">
+        <div class="row-b">
+          <div>
+            <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:19px;color:#fff">${s.name}</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:2px">${s.players.length} Players · ${spObj().name}</div>
+          </div>
+          <div class="row" style="gap:7px">
+            <button class="btn btn-p btn-sm" onclick="event.stopPropagation();openAddPlayer(${sqIdx})">+ ADD</button>
+            <button class="btn btn-d btn-sm" onclick="event.stopPropagation();deleteSquad(${sqIdx})">DEL</button>
+          </div>
+        </div>
+      </div>
+      <div class="sq-body" id="sqb-${s.id}">
+        ${!s.players.length
+          ? `<div style="text-align:center;color:var(--muted);font-size:13px;padding:12px">No players yet — tap + ADD above</div>`
+          : s.players.map((p,pi)=>`
+            <div class="mini-p">
+              ${avt(p.name,34,P)}
+              <div style="flex:1">
+                <div style="font-size:14px;font-weight:500;color:#fff">${p.name}</div>
+                <div style="font-size:11px;color:var(--muted)">${p.position||'Player'} · #${p.jersey||'--'}</div>
+              </div>
+              <button class="del-x" onclick="deletePlayer(${sqIdx},${pi})">×</button>
+            </div>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleSq(id){
+  const el=$(id);
+  if(el) el.classList.toggle('on');
+}
+
+function createSquad(){
+  const name=$('ns-name').value.trim();
+  if(!name) return;
+  squads.push({id:uid(),name,sport,players:[],created:Date.now()});
+  $('ns-name').value='';
+  save(); closeM('m-newsquad'); renderSquads(); toast('✅ Squad created!');
+}
+
+function deleteSquad(idx){
+  if(!confirm('Delete this squad and all its players?')) return;
+  squads.splice(idx,1);
+  save(); renderSquads(); renderDash();
+}
+
+function openAddPlayer(sqIdx){
+  addSqId=sqIdx;
+  const positions=POSITIONS[sport]||POSITIONS.football;
+  const sel=$('p-pos');
+  sel.innerHTML=positions.map(p=>`<option value="${p}">${p}</option>`).join('');
+  $('p-name').value='';
+  $('p-jer').value='';
+  $('bulk-t').value='';
+  openM('m-addplayer');
+}
+
+function addSingle(){
+  const name=$('p-name').value.trim();
+  if(!name||addSqId===null) return;
+  const pos=$('p-pos').value;
+  const jersey=parseInt($('p-jer').value)||Math.floor(Math.random()*99+1);
+  squads[addSqId].players.push({id:uid(),name,position:pos,jersey,stats:[0,0,0],matches:0,mvp:0});
+  save(); renderSquads();
+  $('p-name').value=''; $('p-jer').value='';
+  toast('✅ Player added!');
+}
+
+function addBulk(){
+  const names=$('bulk-t').value.split('\n').map(n=>n.trim()).filter(Boolean);
+  if(!names.length||addSqId===null) return;
+  const pos=POSITIONS[sport]||POSITIONS.football;
+  names.forEach((n,i)=>{
+    squads[addSqId].players.push({id:uid(),name:n,position:pos[i%pos.length],jersey:i+1,stats:[0,0,0],matches:0,mvp:0});
+  });
+  save(); closeM('m-addplayer'); renderSquads();
+  toast(`✅ ${names.length} players added!`);
+}
+
+function deletePlayer(sqIdx,pIdx){
+  squads[sqIdx].players.splice(pIdx,1);
+  save(); renderSquads();
+}
+
+/* ── SHUFFLE ─────────────────────────────────────────── */
+function renderShSetup(){
+  const sq=squads.filter(s=>s.sport===sport);
+  const sel=$('sh-sq');
+  sel.innerHTML='<option value="">All Players</option>'+
+    sq.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+  updateShInfo();
+}
+
+function setTS(n){
+  shSize=n;
+  document.querySelectorAll('#sh-sizes .pill').forEach(b=>b.classList.toggle('on',b.textContent===n+'v'+n));
+  updateShInfo();
+}
+
+function getShPlayers(){
+  const selId=$('sh-sq').value;
+  const sq=squads.filter(s=>s.sport===sport);
+  return selId?(sq.find(s=>s.id===selId)?.players||[]):sq.flatMap(s=>s.players);
+}
+
+function updateShInfo(){
+  const pl=getShPlayers();
+  $('sh-info').textContent=`${pl.length} players available · Need ${shSize*2}+`;
+  $('sh-btn').disabled=pl.length<shSize*2;
+}
+
+$('sh-sq').addEventListener('change',updateShInfo);
+
+function doShuffle(){
+  const pl=getShPlayers();
+  if(pl.length<shSize*2) return;
+  $('pulse').classList.add('on');
+  $('sh-btn').textContent='🔀 SHUFFLING...';
+  $('sh-btn').disabled=true;
+  $('sh-result').style.display='none';
+  setTimeout(()=>{
+    $('pulse').classList.remove('on');
+    const pool=[...pl].sort(()=>Math.random()-0.5);
+    shTA=pool.slice(0,shSize);
+    shTB=pool.slice(shSize,shSize*2);
+    shRev={a:[],b:[]};
+    shCnt++;
+    $('sh-btn').textContent='🔀 RESHUFFLE';
+    $('sh-btn').disabled=false;
+    $('sh-rev-btn').style.display='inline-flex';
+    $('sh-wa-btn').style.display='inline-flex';
+    $('sh-ct').style.display='block';
+    $('sh-ct').textContent=`Shuffled ${shCnt}x · Unlimited reshuffles!`;
+    $('sh-ad').style.display='block';
+    renderShCards();
+  },900);
+}
+
+function renderShCards(){
+  const na=$('sh-na').value||'Team A';
+  const nb=$('sh-nb').value||'Team B';
+  $('sh-la').textContent=na.toUpperCase();
+  $('sh-lb').textContent=nb.toUpperCase();
+  $('sh-la').style.color=th().p;
+  $('sh-lb').style.color=th().a;
+  $('sh-result').style.display='block';
+  $('sh-ta').innerHTML=shTA.map(p=>shCardHTML(p,'a')).join('');
+  $('sh-tb').innerHTML=shTB.map(p=>shCardHTML(p,'b')).join('');
+}
+
+function shCardHTML(p,team){
+  const color=team==='a'?th().p:th().a;
+  const rev=shRev[team].includes(p.id);
+  const inner=rev
+    ?`<div class="sh-inner">${avt(p.name,44,color)}<div style="flex:1"><div style="font-weight:600;font-size:15px;color:#fff">${p.name}</div><div style="font-size:12px;color:${color};margin-top:2px">${p.position||'Player'}</div></div><div style="text-align:right"><div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:22px;color:${color}">${p.stats?.[0]||0}</div><div style="font-size:10px;color:var(--muted)">${sLbl()[0]}</div></div></div>`
+    :`<div class="tap-h"><span style="font-size:26px;opacity:0.3">?</span><span>TAP TO REVEAL</span></div>`;
+  const rs=rev?`background:linear-gradient(135deg,${color}33,${color}11);border-color:${color};box-shadow:0 6px 24px ${th().g}`:'';
+  return `<div class="sh-c${rev?' rev':''}" style="${rs}" onclick="revCard('${p.id}','${team}')">${inner}</div>`;
+}
+
+function revCard(pid,team){
+  if(!shRev[team].includes(pid)) shRev[team].push(pid);
+  renderShCards();
+}
+function revealAll(){
+  shRev.a=shTA.map(p=>p.id);
+  shRev.b=shTB.map(p=>p.id);
+  renderShCards();
+}
+function shareWA(){
+  const na=$('sh-na').value||'Team A';
+  const nb=$('sh-nb').value||'Team B';
+  const tA=shTA.map((p,i)=>`${i+1}. ${p.name} (${p.position||'Player'})`).join('\n');
+  const tB=shTB.map((p,i)=>`${i+1}. ${p.name} (${p.position||'Player'})`).join('\n');
+  const msg=`🏟️ *SQUAD PRO – Team Draw*\n\n*${na}:*\n${tA}\n\n*${nb}:*\n${tB}\n\nGenerated with SquadPro 🔥`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank');
+}
+
+/* ── MATCHES ─────────────────────────────────────────── */
+function setResult(r){
+  mResult=r;
+  ['win','draw','loss'].forEach(x=>$('r-'+x).classList.toggle('on',x===r));
+}
+
+function logMatch(){
+  const ta=$('m-ta').value.trim();
+  const tb=$('m-tb').value.trim();
+  if(!ta||!tb){ toast('⚠️ Enter both team names'); return; }
+  matches.push({
+    id:uid(), teamA:ta, teamB:tb,
+    scoreA:parseInt($('m-sa').value)||0,
+    scoreB:parseInt($('m-sb').value)||0,
+    result:mResult,
+    notes:$('m-notes').value,
+    sport, date:Date.now()
+  });
+  save(); closeM('m-logmatch'); renderMatches(); renderDash();
+  toast('✅ Match logged!');
+  $('m-ta').value=''; $('m-tb').value='';
+  $('m-sa').value='0'; $('m-sb').value='0';
+  $('m-notes').value=''; setResult('win');
+}
+
+function deleteMatch(id){
+  matches=matches.filter(m=>m.id!==id);
+  save(); renderMatches(); renderDash();
+}
+
+function shareMatch(id){
+  const m=matches.find(x=>x.id===id); if(!m) return;
+  const em=m.result==='win'?'🏆':m.result==='loss'?'😢':'🤝';
+  const msg=`${em} *Match Result*\n\n${m.teamA} ${m.scoreA} – ${m.scoreB} ${m.teamB}\nResult: ${m.result.toUpperCase()}\n\n${m.notes||''}\n\n📱 SquadPro`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank');
+}
+
+function renderMatches(){
+  const ma=[...matches].filter(m=>m.sport===sport).sort((a,b)=>b.date-a.date);
+  const c=$('match-list');
+  if(!ma.length){
+    c.innerHTML=`<div class="empty">
+      <div class="ei">🏟️</div>
+      <div class="et">NO MATCHES LOGGED</div>
+      <div class="es">Record your first match result</div>
+      <button class="btn btn-p" onclick="openM('m-logmatch')">+ LOG MATCH</button>
+    </div>`;
+    return;
+  }
+  const bc=m=>m.result==='win'?'rgba(0,200,83,0.25)':m.result==='loss'?'rgba(239,83,80,0.25)':'rgba(255,215,64,0.25)';
+  c.innerHTML=ma.map(m=>`
+    <div class="match-c" style="border:1px solid ${bc(m)}">
+      <div class="row">
+        <div style="text-align:center;min-width:74px;flex-shrink:0">
+          <div class="m-score">${m.scoreA}<span class="sep">-</span>${m.scoreB}</div>
+          <div style="font-size:10px;font-weight:700;color:${rc(m.result)};letter-spacing:1px;text-transform:uppercase">${m.result}</div>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:14px;font-weight:500;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.teamA} <span style="color:var(--muted)">vs</span> ${m.teamB}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:3px">${m.sport} · ${new Date(m.date).toLocaleDateString()}</div>
+          ${m.notes?`<div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.notes}</div>`:''}
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">
+          <button onclick="shareMatch('${m.id}')" style="background:#25D366;border:none;border-radius:8px;color:#fff;padding:6px 10px;font-size:12px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-weight:700">📤 WA</button>
+          <button onclick="deleteMatch('${m.id}')" style="background:rgba(239,83,80,0.14);border:1px solid rgba(239,83,80,0.3);border-radius:8px;color:var(--danger);padding:6px 10px;font-size:12px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-weight:700">DEL</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+/* ── STATS ───────────────────────────────────────────── */
+function renderStats(){
+  const sq=squads.filter(s=>s.sport===sport);
+  const P=th().p, A=th().a, L=sLbl();
+
+  // pills
+  $('stats-pills').innerHTML=
+    `<button class="pill${statsFilter==='all'?' on':''}" onclick="setStatsFilter('all')">ALL</button>`+
+    sq.map(s=>`<button class="pill${statsFilter===s.id?' on':''}" onclick="setStatsFilter('${s.id}')">${s.name}</button>`).join('');
+
+  const pl=statsFilter==='all'
+    ? sq.flatMap(s=>s.players)
+    : (sq.find(s=>s.id===statsFilter)?.players||[]);
+  const sorted=[...pl].sort((a,b)=>(b.stats?.[0]||0)-(a.stats?.[0]||0));
+  const max=Math.max(...sorted.map(p=>p.stats?.[0]||0),1);
+
+  const c=$('stats-list');
+  if(!sorted.length){
+    c.innerHTML=`<div class="empty"><div class="ei">📊</div><div class="et">NO PLAYERS</div><div class="es">Add players to squads to see stats here</div></div>`;
+    return;
+  }
+  c.innerHTML=sorted.map((p,i)=>{
+    // find squad index for this player
+    let sqIdx=-1, pIdx=-1;
+    squads.forEach((s,si)=>{ const pi=s.players.indexOf(p); if(pi>-1){sqIdx=si;pIdx=pi;} });
+    const pct=Math.round(((p.stats?.[0]||0)/max)*100);
+    const statCols=[...L.map((l,j)=>({l,v:p.stats?.[j]||0})),{l:'Matches',v:p.matches||0},{l:'MVP',v:p.mvp||0}].slice(0,4);
+    return `
+      <div class="rank-item" onclick="openEditStats(${sqIdx},${pIdx})">
+        <div class="row" style="margin-bottom:9px">
+          <div class="rank-n${i<3?' top':''}">${i+1}</div>
+          ${avt(p.name,40,P)}
+          <div style="flex:1;min-width:0">
+            <div style="font-size:14px;font-weight:500;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name}</div>
+            <div style="font-size:11px;color:var(--muted)">${p.position||'Player'} · #${p.jersey||'--'}</div>
+          </div>
+          <div style="text-align:right;flex-shrink:0">
+            <div style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:26px;color:${P}">${p.stats?.[0]||0}</div>
+            <div style="font-size:10px;color:var(--muted)">${L[0]}</div>
+          </div>
+        </div>
+        <div style="height:4px;background:rgba(255,255,255,0.08);border-radius:2px;margin-bottom:10px;overflow:hidden">
+          <div style="height:100%;width:${pct}%;background:linear-gradient(to right,${P},${A});transition:width 0.5s"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+          ${statCols.map(s=>`
+            <div style="text-align:center">
+              <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;color:#fff">${s.v}</div>
+              <div style="font-size:10px;color:var(--muted)">${s.l}</div>
+            </div>`).join('')}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function setStatsFilter(id){ statsFilter=id; renderStats(); }
+
+function openEditStats(sqIdx,pIdx){
+  if(sqIdx<0||pIdx<0) return;
+  editPid={sqIdx,pIdx};
+  const p=squads[sqIdx].players[pIdx];
+  const L=sLbl();
+  $('edit-title').textContent='EDIT STATS · '+p.name;
+  $('edit-fields').innerHTML=L.map((l,i)=>`
+    <div class="field">
+      <label>${l}</label>
+      <input type="number" id="es-${i}" value="${p.stats?.[i]||0}"/>
+    </div>`).join('');
+  $('edit-matches').value=p.matches||0;
+  $('edit-mvp').value=p.mvp||0;
+  openM('m-editstats');
+}
+
+function saveStats(){
+  if(!editPid) return;
+  const {sqIdx,pIdx}=editPid;
+  const p=squads[sqIdx].players[pIdx];
+  const L=sLbl();
+  p.stats=L.map((_,i)=>parseInt($('es-'+i).value)||0);
+  p.matches=parseInt($('edit-matches').value)||0;
+  p.mvp=parseInt($('edit-mvp').value)||0;
+  save(); closeM('m-editstats'); renderStats();
+  toast('✅ Stats saved!');
+}
+
+/* ── ADSENSE PUSH ────────────────────────────────────── */
+window.adsbygoogle = window.adsbygoogle || [];
+</script>
+</body>
+</html>
